@@ -59,3 +59,15 @@ pub async fn collect_events(req_body: web::Json<Event>, kafka_producer: Data<Arc
             .payload(&serde_json::to_string(&event).unwrap()));
     Ok(format!("{}", event_id))
 }
+
+pub async fn collect_events_durable(req_body: web::Json<Event>, kafka_producer: Data<FutureProducer>) -> Result<String> {
+    let event = req_body.0;
+    let event_id = Uuid::new_v4().to_string();
+    let local_producer = kafka_producer.get_ref();
+    local_producer.send(
+        FutureRecord::to("events.main")
+            .key(&event_id)
+            .payload(&serde_json::to_string(&event).unwrap()),
+        Duration::from_secs(0)).await;
+    Ok(format!("{}", event_id))
+}
