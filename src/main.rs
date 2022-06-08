@@ -30,10 +30,10 @@ async fn initialize_blocking_server()  {
 }
  */
 async fn main() -> std::io::Result<()> {
-    let kafka_producer = KafkaEventsBuffer::make_producer();
+    let kafka_producer = KafkaEventsBuffer::make_async_producer();
     HttpServer::new(move || App::new()
         .app_data(Data::new(kafka_producer.clone()))
-        .route("/", web::post().to(collect_events_durable)))
+        .route("/", web::post().to(collect_events)))
         .bind(("0.0.0.0", 8888))
         .expect("Unable to bind to the specified address.")
         .run().await
